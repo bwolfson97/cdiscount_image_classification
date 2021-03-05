@@ -2,8 +2,8 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"NCORE": "00_core.ipynb",
-         "get_process_func": "00_core.ipynb",
+index = {"save_images": "00_core.ipynb",
+         "get_mapping": "00_core.ipynb",
          "bson_to_jpeg": "00_core.ipynb"}
 
 modules = ["process_bson.py"]
