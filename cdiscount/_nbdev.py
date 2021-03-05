@@ -4,9 +4,15 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"save_images": "00_core.ipynb",
          "get_mapping": "00_core.ipynb",
-         "bson_to_jpeg": "00_core.ipynb"}
+         "bson_to_jpeg": "00_core.ipynb",
+         "get_image_path": "01_find_duplicates.ipynb",
+         "load_img_as_array": "01_find_duplicates.ipynb",
+         "get_hash": "01_find_duplicates.ipynb",
+         "MAX_IMAGES_PER_PRODUCT": "01_find_duplicates.ipynb",
+         "GetProcessRowFunc": "01_find_duplicates.ipynb"}
 
-modules = ["process_bson.py"]
+modules = ["process_bson.py",
+           "find_duplicates.py"]
 
 doc_url = "https://bwolfson97.github.io/cdiscount/"
 
