@@ -9,6 +9,7 @@ import io
 import bson
 from PIL import Image
 from multiprocessing import Pool
+from typing import List
 
 # Cell
 def save_images(product, save_dir):
@@ -20,7 +21,7 @@ def save_images(product, save_dir):
         picture.save(save_path)
 
 # Cell
-def get_mapping(product): return product["_id"], product["category_id"]
+def get_mapping(product, columns: List[str]): return [product[col] for col in columns]
 
 # Cell
 @call_parse
@@ -35,26 +36,23 @@ def bson_to_jpeg(
     is_test = path.stem == "test"
     print(f"Converting {path} to JPGs in {save_dir}. Mapping saved in {csv_save_path}.")
 
-
-    print("Starting call to save images.")
-    with Pool() as pool:
-        with path.open("rb") as file:
-            for _ in pool.imap(partial(save_images, save_dir=save_dir), bson.decode_file_iter(file), chunksize=10000):
-                pass
-    print("Finished saving images.")
-
-    df = None
-    if not is_test:
-        # Only have category_id's for train data
-        print("Starting call to gather mapping.")
-        mappings = []
+    def parallel_map(func):
         with Pool() as pool:
             with path.open("rb") as file:
-                for mapping in pool.imap(get_mapping, bson.decode_file_iter(file), chunksize=10000):
-                    mappings.append(mapping)
-        print("Finished gathering mapping.")
-        df = pd.DataFrame(mappings, columns=["_id", "category_id"])
-        df.to_csv(csv_save_path, index=False)
-        print(f"Saved CSV to {csv_save_path}.")
+                return [res for res in pool.imap(func, bson.decode_file_iter(file), chunksize=10000)]
+
+    print("Starting call to save images.")
+    parallel_map(partial(save_images, save_dir=save_dir))
+    print("Finished saving images.")
+
+    cols = ["_id"]
+    if not is_test: cols.append("category_id")
+    print("Starting call to gather mapping.")
+    mappings = parallel_map(partial(get_mapping, columns=cols))
+    print("Finished gathering mapping.")
+
+    df = pd.DataFrame(mappings, columns=cols)
+    df.to_csv(csv_save_path, index=False)
+    print(f"Saved CSV to {csv_save_path}.")
     print("Completed successfully.")
     return df

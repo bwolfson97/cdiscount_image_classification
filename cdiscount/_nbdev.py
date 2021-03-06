@@ -9,7 +9,8 @@ index = {"save_images": "00_core.ipynb",
          "load_img_as_array": "01_find_duplicates.ipynb",
          "get_hash": "01_find_duplicates.ipynb",
          "MAX_IMAGES_PER_PRODUCT": "01_find_duplicates.ipynb",
-         "GetProcessRowFunc": "01_find_duplicates.ipynb"}
+         "GetProcessRowFunc": "01_find_duplicates.ipynb",
+         "process_df": "01_find_duplicates.ipynb"}
 
 modules = ["process_bson.py",
            "find_duplicates.py"]
