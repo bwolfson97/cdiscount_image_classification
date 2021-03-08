@@ -67,8 +67,8 @@ def appears_in_train_and_test(df): return contains_multiple_values_in_column(df,
 # Cell
 @call_parse
 def find_duplicates(
-    path: Param("Path to data dir", type=Path),
-    n_workers: Param("Number of workers, defaults to all cores", type=int)=None,
+    path:       Param("Path to data dir", type=Path),
+    n_workers:  Param("Number of workers, defaults to all cores", type=int)=None,
 ) -> List[pd.DataFrame]:
     """Checks for duplicates."""
     # Process CSVs
