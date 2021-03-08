@@ -27,7 +27,12 @@ MAX_IMAGES_PER_PRODUCT = 4  # each product has up to 4 images
 
 # Cell
 def GetProcessRowFunc(data_path: Path, is_test: bool):
-    """Get func to process row of train.csv or test_csv."""
+    """Get func to process row of train.csv or test_csv.
+
+    data_path should have an images subdirectory.
+    """
+    if not (data_path/"images").is_dir():
+        raise ValueError(f"data_path ({data_path}) must have `images` subdirectory.")
     def _inner(*row_values):
         """Processes single row and returns (image hash, image name, _id, category_id, in_test), for each image in product."""
         if is_test: _id, = row_values
@@ -48,7 +53,7 @@ def process_df_helper(df, data_path: Path):
     processed_products = [process_row_func(*row) for row in zip(*[df[col] for col in df.columns])]
     processed_df = pd.DataFrame(chain.from_iterable(processed_products),
                                 columns=["image_hash", "image_name", "_id", "category_id", "in_test"])
-    return processed_df.set_index("image_hash")
+    return processed_df
 
 # Cell
 def process_df(df, data_path: Path, n_workers=None):
@@ -78,9 +83,10 @@ def find_duplicates(
         save_path = csv_path.with_name(f"{csv_path.stem}_hashes.csv")
         if save_path.exists(): break  # File previously processed
         processed_df = process_df(pd.read_csv(csv_path), data_path=path, n_workers=n_workers)
-        processed_df.to_csv(save_path)
+        processed_df.to_csv(save_path, index=False)
         dfs.append(processed_df)
-    intermediate_df = pd.concat(dfs) if len(dfs) > 1 else dfs[0]
+    try: intermediate_df = pd.concat(dfs) if len(dfs) > 1 else dfs[0]
+    except IndexError: intermediate_df = pd.concat(L(path/"train_hashes.csv", path/"test_hashes.csv").map(pd.read_csv))
 
     # Check for duplicates
     duplicated_imgs_df = intermediate_df.groupby("image_hash")
@@ -89,7 +95,7 @@ def find_duplicates(
     both_df = multiple_categories_df.merge(in_train_and_test_df)
 
     # Save results
-    multiple_categories_df.to_csv(path/"multiple_categories.csv")
-    in_train_and_test_df.to_csv(path/"in_train_and_test.csv")
+    multiple_categories_df.to_csv(path/"multiple_categories.csv", index=False)
+    in_train_and_test_df.to_csv(path/"in_train_and_test.csv", index=False)
     both_df.to_csv(path/"multiple_categories_and_in_train_and_test.csv", index=False)
     return multiple_categories_df, in_train_and_test_df, both_df
