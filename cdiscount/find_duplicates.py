@@ -72,7 +72,7 @@ def find_duplicates(
 ) -> List[pd.DataFrame]:
     """Checks for duplicates."""
     # Process CSVs
-    csv_paths = L(path/"train_example.csv", path/"train_example.csv")
+    csv_paths = L(path/"train.csv", path/"test.csv")
     dfs = []
     for csv_path in csv_paths:
         save_path = csv_path.with_name(f"{csv_path.stem}_hashes.csv")
