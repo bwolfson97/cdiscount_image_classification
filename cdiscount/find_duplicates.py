@@ -76,13 +76,16 @@ def find_duplicates(
     n_workers:  Param("Number of workers, defaults to all cores", type=int)=None,
 ) -> List[pd.DataFrame]:
     """Checks for duplicates."""
+    print(f"Finding duplicates in path: {path}")
     # Process CSVs
     csv_paths = L(path/"train.csv", path/"test.csv")
     dfs = []
     for csv_path in csv_paths:
         save_path = csv_path.with_name(f"{csv_path.stem}_hashes.csv")
         if save_path.exists(): break  # File previously processed
+        print(f"Processing {csv_path.name}")
         processed_df = process_df(pd.read_csv(csv_path), data_path=path, n_workers=n_workers)
+        print(f"Finished processing {csv_path.name}. Saving to: {save_path}")
         processed_df.to_csv(save_path, index=False)
         dfs.append(processed_df)
     try: intermediate_df = pd.concat(dfs) if len(dfs) > 1 else dfs[0]
