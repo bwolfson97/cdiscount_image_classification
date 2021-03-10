@@ -2,9 +2,9 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"save_images": "00_core.ipynb",
-         "get_mapping": "00_core.ipynb",
-         "bson_to_jpeg": "00_core.ipynb",
+index = {"save_images": "00_process_bson.ipynb",
+         "get_mapping": "00_process_bson.ipynb",
+         "bson_to_jpeg": "00_process_bson.ipynb",
          "get_image_path": "01_find_duplicates.ipynb",
          "load_img_as_array": "01_find_duplicates.ipynb",
          "get_hash": "01_find_duplicates.ipynb",
@@ -15,6 +15,7 @@ index = {"save_images": "00_core.ipynb",
          "contains_multiple_values_in_column": "01_find_duplicates.ipynb",
          "appears_in_multiple_categories": "01_find_duplicates.ipynb",
          "appears_in_train_and_test": "01_find_duplicates.ipynb",
+         "set_index_and_sort": "01_find_duplicates.ipynb",
          "find_duplicates": "01_find_duplicates.ipynb"}
 
 modules = ["process_bson.py",

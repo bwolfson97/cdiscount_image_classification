@@ -2,7 +2,7 @@
 
 __all__ = ['get_image_path', 'load_img_as_array', 'get_hash', 'MAX_IMAGES_PER_PRODUCT', 'GetProcessRowFunc',
            'process_df_helper', 'process_df', 'contains_multiple_values_in_column', 'appears_in_multiple_categories',
-           'appears_in_train_and_test', 'find_duplicates']
+           'appears_in_train_and_test', 'set_index_and_sort', 'find_duplicates']
 
 # Cell
 from fastcore.all import *
@@ -12,12 +12,15 @@ from PIL import Image
 from hashlib import md5
 from itertools import chain
 from typing import List
+from multiprocessing import Pool
 
 # Cell
 def get_image_path(data_path, _id, img_num): return data_path/"images"/f"{_id}_{img_num}.jpg"
 
 # Cell
-def load_img_as_array(path): return np.array(Image.open(path))
+def load_img_as_array(path):
+    with Image.open(path) as img:
+        return np.array(img)
 
 # Cell
 def get_hash(array: np.ndarray): return md5(array.tobytes()).hexdigest()
@@ -51,23 +54,29 @@ def process_df_helper(df, data_path: Path):
     """Processes a train/test dataframe and returns the intermediate dataframe with hashes."""
     process_row_func = GetProcessRowFunc(data_path, is_test="category_id" not in df)
     processed_products = [process_row_func(*row) for row in zip(*[df[col] for col in df.columns])]
-    processed_df = pd.DataFrame(chain.from_iterable(processed_products),
+    return pd.DataFrame(chain.from_iterable(processed_products),
                                 columns=["image_hash", "image_name", "_id", "category_id", "in_test"])
-    return processed_df
 
 # Cell
 def process_df(df, data_path: Path, n_workers=None):
     """Applies `process_df_helper` in parallel across df."""
     proc_func = partial(process_df_helper, data_path=data_path)
-    chunks = np.array_split(df, int(len(df/100)))
-    with ProcessPoolExecutor(max_workers=n_workers) as ex:
-        res = ex.map(proc_func, chunks)
-    return pd.concat(list(res))
+    chunks = np.array_split(df, int(len(df/1000)))
+    with Pool(n_workers) as ex:
+        return pd.concat([processed_chunk for processed_chunk in ex.imap(proc_func, chunks)])
 
 # Cell
 def contains_multiple_values_in_column(df, col): return len(df[col].unique()) > 1
 def appears_in_multiple_categories(df): return contains_multiple_values_in_column(df, "category_id")
 def appears_in_train_and_test(df): return contains_multiple_values_in_column(df, "in_test")
+
+# Cell
+def set_index_and_sort(df):
+    """Sets indices, and sorts."""
+    multi_index = ["image_hash", "image_name"]
+    df.set_index(multi_index, inplace=True)
+    df.sort_index(level=multi_index, inplace=True)
+    return df
 
 # Cell
 @call_parse
@@ -84,7 +93,7 @@ def find_duplicates(
         save_path = csv_path.with_name(f"{csv_path.stem}_hashes.csv")
         if save_path.exists(): break  # File previously processed
         print(f"Processing {csv_path.name}")
-        processed_df = process_df(pd.read_csv(csv_path), data_path=path, n_workers=n_workers)
+        processed_df = process_df_helper(pd.read_csv(csv_path), data_path=path)#, n_workers=n_workers) Trying serial execution to debug
         print(f"Finished processing {csv_path.name}. Saving to: {save_path}")
         processed_df.to_csv(save_path, index=False)
         dfs.append(processed_df)
@@ -96,9 +105,11 @@ def find_duplicates(
     multiple_categories_df = duplicated_imgs_df.filter(appears_in_multiple_categories)
     in_train_and_test_df = duplicated_imgs_df.filter(appears_in_train_and_test)
     both_df = multiple_categories_df.merge(in_train_and_test_df)
+    multiple_categories_df,in_train_and_test_df,both_df = L(multiple_categories_df,in_train_and_test_df,both_df
+                                                           ).map(set_index_and_sort)
 
     # Save results
-    multiple_categories_df.to_csv(path/"multiple_categories.csv", index=False)
-    in_train_and_test_df.to_csv(path/"in_train_and_test.csv", index=False)
-    both_df.to_csv(path/"multiple_categories_and_in_train_and_test.csv", index=False)
+    multiple_categories_df.to_csv(path/"multiple_categories.csv")
+    in_train_and_test_df.to_csv(path/"in_train_and_test.csv")
+    both_df.to_csv(path/"multiple_categories_and_in_train_and_test.csv")
     return multiple_categories_df, in_train_and_test_df, both_df
