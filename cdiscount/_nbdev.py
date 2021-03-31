@@ -15,8 +15,6 @@ index = {"save_images": "00_process_bson.ipynb",
          "appears_in_train_and_test": "01_find_duplicates.ipynb",
          "set_index_and_sort": "01_find_duplicates.ipynb",
          "find_duplicates": "01_find_duplicates.ipynb",
-         "get_duplicated_image_idxs": "02_process_duplicates_image_level.ipynb",
-         "get_test_imgs_to_train_categories": "02_process_duplicates_image_level.ipynb",
          "get_image_level_csvs": "02_process_duplicates_image_level.ipynb"}
 
 modules = ["process_bson.py",
