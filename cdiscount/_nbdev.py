@@ -17,6 +17,8 @@ index = {"save_images": "00_process_bson.ipynb",
          "find_duplicates": "01_find_duplicates.ipynb",
          "create_vocab": "02_process_duplicates_image_level.ipynb",
          "convert_category_lists_to_probability_vectors": "02_process_duplicates_image_level.ipynb",
+         "get_test_csvs": "02_process_duplicates_image_level.ipynb",
+         "get_train_csv": "02_process_duplicates_image_level.ipynb",
          "get_image_level_csvs": "02_process_duplicates_image_level.ipynb"}
 
 modules = ["process_bson.py",
